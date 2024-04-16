@@ -1,9 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
+import { useContext } from "react";
+import { CartContext } from "./CartContext";
 
 export default function NavigationBar() {
+  const { cartProducts } = useContext(CartContext);
   return (
-    <nav className="absolute top-0 left-0 w-full z-10 bg-gray-300 bg-opacity-40 backdrop-filter backdrop-blur-md">
+    <nav className="absolute top-0 left-0 w-full z-10 bg-gray-300 bg-opacity-40 backdrop-filter backdrop-blur-sm">
       <div className="container flex flex-wrap justify-between items-center mx-auto">
         <div className="flex md:order-1">
           {/* Left side links */}
@@ -50,7 +53,7 @@ export default function NavigationBar() {
             />
           </Link>
         </div>
-        {/* Right side links and user menu */}
+        {/* Right side links */}
         <div
           className="hidden justify-between items-center w-full md:flex md:w-auto md:order-3"
           id="navbar-sticky"
@@ -72,7 +75,12 @@ export default function NavigationBar() {
                 Contact
               </Link>
             </li>
-            {/* Add user menu here */}
+            {/* Cart and later add user account and maybe favorites */}
+            <li>
+              <Link href="/cart" className="">
+                Cart({cartProducts.length})
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
