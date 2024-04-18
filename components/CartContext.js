@@ -30,9 +30,34 @@ export function CartContextProvider({ children }) {
     setCartProducts((prev) => [...prev, productId]);
   }
 
+  function decreaseProduct(productId) {
+    setCartProducts((prev) => {
+      let found = false;
+      return prev.filter((item) => {
+        if (!found && item === productId) {
+          found = true; // Mark the first match as found and skip it
+          return false;
+        }
+        return true; // Keep all other items
+      });
+    });
+  }
+
+  function removeProduct(productId) {
+    setCartProducts((prev) => prev.filter((id) => id !== productId));
+  }
+
   // Rendering the context provider with the current cartProducts state and functions to modify it
   return (
-    <CartContext.Provider value={{ cartProducts, setCartProducts, addProduct }}>
+    <CartContext.Provider
+      value={{
+        cartProducts,
+        setCartProducts,
+        addProduct,
+        decreaseProduct,
+        removeProduct,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
