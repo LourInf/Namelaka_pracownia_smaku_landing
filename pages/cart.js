@@ -3,18 +3,27 @@ import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import Swal from "sweetalert2";
 
 export default function Cart() {
   //'products' stores detailed info about the products (id, title, description, img...) that we can use as a state to display info to the user
   //white 'cartProducts' only stores product id, which we use for tracking which products are in the cart
-  const { cartProducts, addProduct, decreaseProduct, removeProduct } =
-    useContext(CartContext);
+  const {
+    cartProducts,
+    addProduct,
+    decreaseProduct,
+    removeProduct,
+    clearCart,
+  } = useContext(CartContext);
+  const router = useRouter();
   const [products, setProducts] = useState([]);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [phone, setPhone] = useState("");
   const [terms, setTerms] = useState(false);
+  const [orderComplete, setOrderComplete] = useState(false);
 
   //When items are added to the cart, their IDs are stored in cartProducts. So whenever cartProducts>0 then I want to grab the info from our products (and i put that inside a state too)
   // This useEffect is triggered when cartProducts changes (eg. when items are added to or removed from the cart).
@@ -54,6 +63,35 @@ export default function Cart() {
     const price = products.find((p) => p._id === productId)?.price || 0;
     total += price;
   }
+
+  async function goToPayment() {
+    const response = await axios.post("/api/checkout", {
+      name,
+      email,
+      surname,
+      terms,
+      cartProducts,
+    });
+    if (response.data.url) {
+      window.location = response.data.url;
+    }
+  }
+
+  useEffect(() => {
+    if (window.location.href.includes("success")) {
+      Swal.fire({
+        title: "Thank you for your order!",
+        text: "We will email you when your order will be sent.",
+        icon: "success",
+        confirmButtonText: "Back to home",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push("/");
+        }
+      });
+      clearCart();
+    }
+  }, [router]);
 
   return (
     <div className="pt-60 flex justify-center items-start px-4 sm:px-6 lg:px-8">
@@ -165,121 +203,118 @@ export default function Cart() {
         <div className="bg-red-100 text-white p-6 shadow rounded-lg w-full md:w-80">
           <h2 className="text-lg font-bold mb-4">Order information</h2>
 
-          <form method="post" action="/api/checkout" class="max-w-md mx-auto">
+          {/* <form method="post" action="/api/checkout" class="max-w-md mx-auto"> --> for testing with btn submit and input hidden.*/}
+          <div class="relative z-0 w-full mb-5 group">
+            <input
+              type="email"
+              name="email"
+              id="floating_email"
+              class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+              placeholder=" "
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <label
+              htmlFor="floating_email"
+              class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+            >
+              Email address
+            </label>
+          </div>
+
+          <div class="grid md:grid-cols-2 md:gap-6">
             <div class="relative z-0 w-full mb-5 group">
               <input
-                type="email"
-                name="email"
-                id="floating_email"
+                type="text"
+                name="name"
+                id="floating_first_name"
                 class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
                 placeholder=" "
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
               <label
-                htmlFor="floating_email"
-                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                htmlFor="floating_first_name"
+                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
               >
-                Email address
+                First name
               </label>
             </div>
-
-            <div class="grid md:grid-cols-2 md:gap-6">
-              <div class="relative z-0 w-full mb-5 group">
-                <input
-                  type="text"
-                  name="name"
-                  id="floating_first_name"
-                  class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
-                  placeholder=" "
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-                <label
-                  htmlFor="floating_first_name"
-                  class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                >
-                  First name
-                </label>
-              </div>
-              <div class="relative z-0 w-full mb-5 group">
-                <input
-                  type="text"
-                  name="surname"
-                  id="floating_last_name"
-                  class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
-                  placeholder=" "
-                  required
-                  value={surname}
-                  onChange={(e) => setSurname(e.target.value)}
-                />
-                <label
-                  htmlFor="floating_last_name"
-                  class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                >
-                  Last name
-                </label>
-              </div>
-            </div>
-            <div class="grid md:grid-cols-2 md:gap-6">
-              <div class="relative z-0 w-full mb-5 group">
-                <input
-                  type="tel"
-                  name="phone"
-                  id="floating_phone"
-                  class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
-                  placeholder=" "
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-                <label
-                  for="floating_phone"
-                  class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                >
-                  Phone number
-                </label>
-              </div>
-            </div>
-            <div class="flex items-center mb-4">
+            <div class="relative z-0 w-full mb-5 group">
               <input
-                id="checkbox-1"
-                name="terms"
-                type="checkbox"
-                checked={terms}
+                type="text"
+                name="surname"
+                id="floating_last_name"
+                class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                placeholder=" "
                 required
-                onChange={(e) => setTerms(e.target.checked)}
-                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                value={surname}
+                onChange={(e) => setSurname(e.target.value)}
               />
               <label
-                htmlFor="checkbox-1"
-                class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                htmlFor="floating_last_name"
+                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
               >
-                I agree to the
-                <Link
-                  href="#"
-                  class="text-blue-600 hover:underline dark:text-blue-500"
-                >
-                  terms and conditions
-                </Link>
-                .
+                Last name
               </label>
             </div>
+          </div>
+          <div class="grid md:grid-cols-2 md:gap-6">
+            <div class="relative z-0 w-full mb-5 group">
+              <input
+                type="tel"
+                name="phone"
+                id="floating_phone"
+                class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                placeholder=" "
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+              <label
+                for="floating_phone"
+                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-purple-600 peer-focus:dark:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+              >
+                Phone number
+              </label>
+            </div>
+          </div>
+          <div class="flex items-center mb-4">
             <input
-              type="hidden"
-              name="products"
-              value={cartProducts.join(",")}
+              id="checkbox-1"
+              name="terms"
+              type="checkbox"
+              checked={terms}
+              required
+              onChange={(e) => setTerms(e.target.checked)}
+              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
-            {/*to send as well in the background the ids of all products*/}
-            <button
-              type="submit"
-              className="w-full bg-white text-black py-2 rounded-md"
+            <label
+              htmlFor="checkbox-1"
+              class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
             >
-              Continue to payment
-            </button>
-          </form>
+              I agree to the
+              <Link
+                href="#"
+                class="text-blue-600 hover:underline dark:text-blue-500"
+              >
+                terms and conditions
+              </Link>
+              .
+            </label>
+          </div>
+          {/* <input type="hidden" name="products" value={cartProducts.join(",")} /> */}
+          {/*used to send as well in the background the ids of all products when testing the form for payment*/}
+          <button
+            // type="submit"
+            onClick={goToPayment}
+            className="w-full bg-white text-black py-2 rounded-md"
+          >
+            Continue to payment
+          </button>
+          {/* </form> */}
         </div>
       </div>
     </div>

@@ -47,6 +47,11 @@ export function CartContextProvider({ children }) {
     setCartProducts((prev) => prev.filter((id) => id !== productId));
   }
 
+  function clearCart() {
+    setCartProducts([]);
+    ls?.removeItem("cart"); // Remove the cart from localStorage
+  }
+
   // Rendering the context provider with the current cartProducts state and functions to modify it
   return (
     <CartContext.Provider
@@ -56,6 +61,7 @@ export function CartContextProvider({ children }) {
         addProduct,
         decreaseProduct,
         removeProduct,
+        clearCart,
       }}
     >
       {children}

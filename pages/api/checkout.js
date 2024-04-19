@@ -8,10 +8,10 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
-  const { email, name, surname, phone, terms, products } = req.body;
+  const { email, name, surname, phone, terms, cartProducts } = req.body;
 
   await mongooseConnect;
-  const productsIds = products.split(",");
+  const productsIds = cartProducts;
   const uniqueIds = [...new Set(productsIds)];
   const productsInfos = await Product.find({ _id: uniqueIds });
 
