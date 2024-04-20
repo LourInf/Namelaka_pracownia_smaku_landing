@@ -23,7 +23,6 @@ export default function Cart() {
   const [surname, setSurname] = useState("");
   const [phone, setPhone] = useState("");
   const [terms, setTerms] = useState(false);
-  const [orderComplete, setOrderComplete] = useState(false);
 
   //When items are added to the cart, their IDs are stored in cartProducts. So whenever cartProducts>0 then I want to grab the info from our products (and i put that inside a state too)
   // This useEffect is triggered when cartProducts changes (eg. when items are added to or removed from the cart).
@@ -68,6 +67,7 @@ export default function Cart() {
     const response = await axios.post("/api/checkout", {
       name,
       email,
+      phone,
       surname,
       terms,
       cartProducts,
@@ -78,7 +78,10 @@ export default function Cart() {
   }
 
   useEffect(() => {
-    if (window.location.href.includes("success")) {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (window?.location.href.includes("success")) {
       Swal.fire({
         title: "Thank you for your order!",
         text: "We will email you when your order will be sent.",
@@ -91,7 +94,7 @@ export default function Cart() {
       });
       clearCart();
     }
-  }, [router]);
+  }, []);
 
   return (
     <div className="pt-60 flex justify-center items-start px-4 sm:px-6 lg:px-8">

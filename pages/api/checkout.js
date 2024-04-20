@@ -41,6 +41,7 @@ export default async function handler(req, res) {
     line_items,
     name,
     email,
+    phone,
     surname,
     terms: termsAccepted,
     paid: false,
