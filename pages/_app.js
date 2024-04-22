@@ -6,7 +6,7 @@ export default function App({ Component, pageProps }) {
   return (
     <CartContextProvider>
       <NavigationBar />
-      <Component {...pageProps} />;
+      <Component {...pageProps} />
     </CartContextProvider>
   );
 }

@@ -22,18 +22,18 @@ export default function NavigationBar() {
             </li>
             <li>
               <Link
-                href="/offer"
+                href="/categories"
                 className="text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm p-2"
               >
-                Offer
+                Categories
               </Link>
             </li>
             <li>
               <Link
-                href="/shop"
+                href="/products"
                 className="text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm p-2"
               >
-                E-shop
+                All products
               </Link>
             </li>
           </ul>
