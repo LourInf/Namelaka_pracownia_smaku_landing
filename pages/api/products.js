@@ -5,10 +5,17 @@ import { Product } from "@/models/Product";
 
 export default async function handler(req, res) {
   await mongooseConnect();
-  const { categories, sort, ...filters } = req.query; // Destructure 'categories' and the rest of the filters from the request query parameters. Added sort
+  const { categories, sort, phrase, ...filters } = req.query; // Destructure 'categories' and the rest of the filters from the request query parameters. Added sort, phrase,..
   //   console.log({ sort });
-  const [sortField, sortOrder] = sort.split("-");
-  const queryObject = { category: { $in: categories.split(",") } }; // Create a query object to find products with categories that match any in the provided list
+  let [sortField, sortOrder] = (sort || "_id-desc").split("-");
+
+  // Initialize category filter only if 'categories' parameter exists and is not empty
+  const categoryArray = categories ? categories.split(",") : [];
+
+  const queryObject = {};
+  if (categoryArray.length > 0) {
+    queryObject.category = { $in: categoryArray };
+  } // Create a query object to find products with categories that match any in the provided list
   // For each filter, use dot notation to query inside the properties object
   // Iterate over each filter in the filters object
   Object.keys(filters).forEach((key) => {
@@ -19,10 +26,20 @@ export default async function handler(req, res) {
     }
   });
 
+  if (phrase) {
+    queryObject["$or"] = [
+      { title: { $regex: phrase, $options: "i" } },
+      { description: { $regex: phrase, $options: "i" } },
+    ];
+  }
   //   console.log("Query Object:", queryObject);
-  res.json(
-    await Product.find(queryObject, null, {
-      sort: { [sortField]: sortOrder == "desc" ? -1 : 1 },
-    })
-  ); // Use the Product model to find all products that match the query object and return them as JSON
-}
+  try {
+    const products = await Product.find(queryObject, null, {
+      sort: { [sortField]: sortOrder === "desc" ? -1 : 1 },
+    });
+    res.json(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Error fetching products" });
+  }
+} // Use the Product model to find all products that match the query object and return them as JSON

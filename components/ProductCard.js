@@ -1,10 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { CartContext } from "./CartContext";
+import ClipLoader from "react-spinners/ClipLoader";
 
 export default function ProductCard({ product }) {
   const { addProduct } = useContext(CartContext);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [showSpinner, setShowSpinner] = useState(false);
+
+  const handleAddToCart = (productId) => {
+    addProduct(productId); // Trigger addProduct when clicked
+    setShowSpinner(true);
+    setTimeout(() => {
+      setShowSpinner(false);
+      setAddedToCart(true);
+      setTimeout(() => {
+        setAddedToCart(false);
+      }, 2000); // Show check for 2 seconds
+    }, 500); // Show spinner for 500ms
+  };
 
   return (
     <div className="w-full max-w-60 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
@@ -46,10 +61,33 @@ export default function ProductCard({ product }) {
             ${product.price}
           </span>
           <button
-            onClick={() => addProduct(product._id)} // Trigger addProduct when clicked
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            onClick={() => handleAddToCart(product._id)}
+            className={`relative text-white ${
+              addedToCart
+                ? "bg-green-200 hover:bg-green-300"
+                : "bg-blue-700 hover:bg-blue-800"
+            } focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 min-w-[120px] flex items-center justify-center`}
           >
-            Add to Cart
+            {showSpinner ? (
+              <ClipLoader color="#ffffff" size={24} />
+            ) : addedToCart ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m4.5 12.75 6 6 9-13.5"
+                />
+              </svg>
+            ) : (
+              "Add to Cart"
+            )}
           </button>
         </div>
       </div>
