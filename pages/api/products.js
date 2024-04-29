@@ -5,7 +5,9 @@ import { Product } from "@/models/Product";
 
 export default async function handler(req, res) {
   await mongooseConnect();
-  const { categories, ...filters } = req.query; // Destructure 'categories' and the rest of the filters from the request query parameters
+  const { categories, sort, ...filters } = req.query; // Destructure 'categories' and the rest of the filters from the request query parameters. Added sort
+  //   console.log({ sort });
+  const [sortField, sortOrder] = sort.split("_");
   const queryObject = { category: { $in: categories.split(",") } }; // Create a query object to find products with categories that match any in the provided list
   // For each filter, use dot notation to query inside the properties object
   // Iterate over each filter in the filters object
@@ -18,5 +20,9 @@ export default async function handler(req, res) {
   });
 
   //   console.log("Query Object:", queryObject);
-  res.json(await Product.find(queryObject)); // Use the Product model to find all products that match the query object and return them as JSON
+  res.json(
+    await Product.find(queryObject, null, {
+      sort: { [sortField]: sortOrder == "desc" ? -1 : 1 },
+    })
+  ); // Use the Product model to find all products that match the query object and return them as JSON
 }

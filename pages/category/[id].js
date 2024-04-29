@@ -20,6 +20,8 @@ export default function CategoryPage({
   );
   //   console.log("filtersValues: ", filtersValues);
 
+  const [sort, setSort] = useState("price_asc");
+
   function handleFilterChange(filterName, filterValue) {
     setFiltersValues((prev) => {
       const newValue = prev.map((p) => ({
@@ -34,7 +36,8 @@ export default function CategoryPage({
     const catIds = [category._id, ...(subCategories?.map((c) => c._id) || [])];
     // console.log(catIds);
     const params = new URLSearchParams();
-    params.set("categories", catIds.join(","));
+    params.set("categories", catIds.join(",")); //for filtering
+    params.set("sort", sort); //for sorting
     filtersValues.forEach((f) => {
       if (f.value !== "all") {
         params.set(f.name, f.value);
@@ -45,7 +48,7 @@ export default function CategoryPage({
       //   console.log(res.data);
       setProducts(res.data);
     });
-  }, [filtersValues]);
+  }, [filtersValues, sort]);
 
   return (
     <>
@@ -75,6 +78,13 @@ export default function CategoryPage({
         ) : (
           <p>No filters available.</p>
         )}
+      </div>
+      <div>
+        <span>Sort by</span>
+        <select value={sort} onChange={(e) => setSort(e.target.value)}>
+          <option value="price_asc">Price, lowest first</option>
+          <option value="price_desc">Price, highest first</option>
+        </select>
       </div>
       <div className="grid grid-cols-5 gap-4">
         {products &&
