@@ -4,6 +4,7 @@ import { Product } from "@/models/Product";
 import ProductCard from "@/components/ProductCard";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Spinner from "@/components/Spinner";
 
 export default function CategoryPage({
   category,
@@ -20,7 +21,8 @@ export default function CategoryPage({
   );
   //   console.log("filtersValues: ", filtersValues);
 
-  const [sort, setSort] = useState("price_asc");
+  const [sort, setSort] = useState("_id-desc");
+  const [loading, setLoading] = useState(false);
 
   function handleFilterChange(filterName, filterValue) {
     setFiltersValues((prev) => {
@@ -33,6 +35,7 @@ export default function CategoryPage({
   }
 
   useEffect(() => {
+    setLoading(true);
     const catIds = [category._id, ...(subCategories?.map((c) => c._id) || [])];
     // console.log(catIds);
     const params = new URLSearchParams();
@@ -47,8 +50,21 @@ export default function CategoryPage({
     axios.get(url).then((res) => {
       //   console.log(res.data);
       setProducts(res.data);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
     });
   }, [filtersValues, sort]);
+
+  function resetFiltersAndSort() {
+    setFiltersValues(
+      category.properties.map((p) => ({
+        name: p.name,
+        value: "all",
+      }))
+    );
+    setSort("price_asc");
+  }
 
   return (
     <>
@@ -78,21 +94,48 @@ export default function CategoryPage({
         ) : (
           <p>No filters available.</p>
         )}
+
+        <div className="bg-slate-300 rounded-md pl-2">
+          Sort by:
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="bg-transparent rounded-md border-none bg-slate-300"
+          >
+            <option value="price_asc" className="bg-slate-200">
+              Price, lowest first
+            </option>
+            <option value="price_desc" className="bg-slate-200">
+              Price, highest first
+            </option>
+            <option value="_id-desc">newest first</option>
+            <option value="_id-asc">oldest first</option>
+          </select>
+        </div>
+        <button
+          onClick={resetFiltersAndSort}
+          className="text-gold border border-gold hover:bg-gold hover:text-white py-2 px-4 rounded transition-colors"
+        >
+          Reset Filters
+        </button>
       </div>
+      {loading && (
+        <div className="flex justify-center items-start pt-32 h-screen">
+          <Spinner />
+        </div>
+      )}
+      {!loading && (
+        <div className="grid grid-cols-5 gap-4">
+          {products &&
+            products.length > 0 &&
+            products.map(
+              (product) =>
+                product && <ProductCard key={product._id} product={product} />
+            )}
+        </div>
+      )}
       <div>
-        <span>Sort by</span>
-        <select value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="price_asc">Price, lowest first</option>
-          <option value="price_desc">Price, highest first</option>
-        </select>
-      </div>
-      <div className="grid grid-cols-5 gap-4">
-        {products &&
-          products.length > 0 &&
-          products.map(
-            (product) =>
-              product && <ProductCard key={product._id} product={product} />
-          )}
+        {products.length === 0 && <div className="pl-5">No Products found</div>}
       </div>
     </>
   );

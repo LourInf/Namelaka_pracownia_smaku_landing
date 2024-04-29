@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   await mongooseConnect();
   const { categories, sort, ...filters } = req.query; // Destructure 'categories' and the rest of the filters from the request query parameters. Added sort
   //   console.log({ sort });
-  const [sortField, sortOrder] = sort.split("_");
+  const [sortField, sortOrder] = sort.split("-");
   const queryObject = { category: { $in: categories.split(",") } }; // Create a query object to find products with categories that match any in the provided list
   // For each filter, use dot notation to query inside the properties object
   // Iterate over each filter in the filters object
