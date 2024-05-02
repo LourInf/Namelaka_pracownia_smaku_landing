@@ -3,11 +3,16 @@ import Link from "next/link";
 import { useContext, useState } from "react";
 import { CartContext } from "./CartContext";
 import ClipLoader from "react-spinners/ClipLoader";
+import axios from "axios";
 
-export default function ProductCard({ product }) {
+//receives a product object and an optional array of wishedProducts ids
+export default function ProductCard({ product, wishedProducts = [] }) {
   const { addProduct } = useContext(CartContext);
   const [addedToCart, setAddedToCart] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
+  const [isLiked, setIsLiked] = useState(
+    wishedProducts.includes(product._id.toString()) //to manage 'isLiked' state, which checks if the current product's id is in the wishedProducts array, converting product._id to string for comparison
+  );
 
   const handleAddToCart = (productId) => {
     addProduct(productId); // Trigger addProduct when clicked
@@ -20,6 +25,50 @@ export default function ProductCard({ product }) {
       }, 2000); // Show check for 2 seconds
     }, 500); // Show spinner for 500ms
   };
+
+  const HeartOutlineIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      className="w-6 h-6"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+      />
+    </svg>
+  );
+
+  const HeartSolidIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="w-6 h-6"
+    >
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+    </svg>
+  );
+
+  function addToWishlist() {
+    const nextValue = !isLiked; // Determine the new liked state by negating the current state
+    setIsLiked(nextValue); // update the UI to reflect the new liked state
+
+    // Make a POST request to update the wishlist on the server
+    axios
+      .post("/api/wishlist", { product: product._id, liked: nextValue })
+      .then((response) => {
+        console.log("Wishlist updated:", response.data);
+      })
+      .catch((error) => {
+        console.error("Failed to update wishlist", error);
+        setIsLiked(!nextValue); // Revert the isLiked state if the server update fails
+      });
+  }
 
   return (
     <div className="w-full max-w-60 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
@@ -39,6 +88,9 @@ export default function ProductCard({ product }) {
             {product.title}
           </h5>
         </Link>
+        <button onClick={addToWishlist} className="mt-3">
+          {isLiked ? <HeartSolidIcon /> : <HeartOutlineIcon />}
+        </button>
         {/* Star rating and price section */}
         <div className="flex items-center mt-2.5 mb-5">
           {/* Dynamic SVG star icons */}
