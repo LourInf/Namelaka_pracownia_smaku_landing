@@ -4,8 +4,15 @@ import { Product } from "@/models/Product";
 import Image from "next/image";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
+import { Wishlist } from "@/models/Wishlist";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./api/auth/[...nextauth]";
 
-export default function Categories({ mainCategories, categoryProducts }) {
+export default function Categories({
+  mainCategories,
+  categoryProducts,
+  wishedProducts,
+}) {
   // console.log(categoryProducts);
   return (
     <>
@@ -26,7 +33,11 @@ export default function Categories({ mainCategories, categoryProducts }) {
               <div className="flex items-center justify-center flex-wrap gap-4">
                 {categoryProducts[cat._id] &&
                   categoryProducts[cat._id].map((product) => (
-                    <ProductCard key={product._id} product={product} />
+                    <ProductCard
+                      key={product._id}
+                      product={product}
+                      wishedProducts={wishedProducts}
+                    />
                   ))}
                 <Link
                   href={"/category/" + cat._id}
@@ -56,7 +67,7 @@ export default function Categories({ mainCategories, categoryProducts }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context) {
   await mongooseConnect();
   // 1. Fetch all categories from the database
   const categories = await Category.find();
@@ -84,11 +95,28 @@ export async function getServerSideProps() {
     categoryProducts[mainCat._id] = products;
   }
 
-  // Return fetched data as props to the page component
+  // retrieve session information
+  const session = await getServerSession(context.req, context.res, authOptions);
+
+  // Initialize wishedProductIds as an empty array for non-loggedin users
+  let wishedProductIds = [];
+
+  // If a user is logged in, fetch their wishlist
+  if (session?.user) {
+    const wishlist = await Wishlist.findOne({
+      userEmail: session.user.email,
+    }).lean();
+    if (wishlist && wishlist.products) {
+      wishedProductIds = wishlist.products.map((id) => id.toString());
+    }
+  }
+
+  // Return fetched data as props and the wishlist info (if available) to the client
   return {
     props: {
       mainCategories: JSON.parse(JSON.stringify(mainCategories)),
       categoryProducts: JSON.parse(JSON.stringify(categoryProducts)),
+      wishedProducts: wishedProductIds,
     },
   };
 }

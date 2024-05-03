@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   await mongooseConnect();
 
   // retrieves the data (emal, name, etc) from the session.
-  const { user } = await getServerSession(req, res, authOptions);
+  const { user } = (await getServerSession(req, res, authOptions)) || {};
 
   if (req.method === "PUT") {
     //now it looks for an account in the db which matches the email of logged-in user.

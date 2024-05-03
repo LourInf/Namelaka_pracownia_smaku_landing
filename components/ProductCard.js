@@ -6,7 +6,11 @@ import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
 
 //receives a product object and an optional array of wishedProducts ids
-export default function ProductCard({ product, wishedProducts = [] }) {
+export default function ProductCard({
+  product,
+  wishedProducts = [],
+  onRemoveFromWishlist = () => {},
+}) {
   const { addProduct } = useContext(CartContext);
   const [addedToCart, setAddedToCart] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
@@ -57,7 +61,10 @@ export default function ProductCard({ product, wishedProducts = [] }) {
   function addToWishlist() {
     const nextValue = !isLiked; // Determine the new liked state by negating the current state
     setIsLiked(nextValue); // update the UI to reflect the new liked state
-
+    // if product is unliked and there's a wishlist, we remove that product from wishlist
+    if (nextValue == false && onRemoveFromWishlist) {
+      onRemoveFromWishlist(product._id);
+    }
     // Make a POST request to update the wishlist on the server
     axios
       .post("/api/wishlist", { product: product._id, liked: nextValue })
@@ -88,60 +95,43 @@ export default function ProductCard({ product, wishedProducts = [] }) {
             {product.title}
           </h5>
         </Link>
-        <button onClick={addToWishlist} className="mt-3">
-          {isLiked ? <HeartSolidIcon /> : <HeartOutlineIcon />}
-        </button>
-        {/* Star rating and price section */}
-        <div className="flex items-center mt-2.5 mb-5">
-          {/* Dynamic SVG star icons */}
-          {[...Array(5)].map((_, index) => (
-            <svg
-              key={index}
-              className="w-4 h-4 text-yellow-300"
-              fill="currentColor"
-              viewBox="0 0 22 20"
-            >
-              <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-            </svg>
-          ))}
-          <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ms-3">
-            5.0
+        <div className="flex items-center justify-between mb-5">
+          <span className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+            {product.price} zł
           </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-3xl font-bold text-gray-900 dark:text-white">
-            ${product.price}
-          </span>
-          <button
-            onClick={() => handleAddToCart(product._id)}
-            className={`relative text-white ${
-              addedToCart
-                ? "bg-green-200 hover:bg-green-300"
-                : "bg-blue-700 hover:bg-blue-800"
-            } focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 min-w-[120px] flex items-center justify-center`}
-          >
-            {showSpinner ? (
-              <ClipLoader color="#ffffff" size={24} />
-            ) : addedToCart ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m4.5 12.75 6 6 9-13.5"
-                />
-              </svg>
-            ) : (
-              "Add to Cart"
-            )}
+          <button onClick={addToWishlist} className="mt-1">
+            {isLiked ? <HeartSolidIcon /> : <HeartOutlineIcon />}
           </button>
         </div>
+        <button
+          onClick={() => handleAddToCart(product._id)}
+          className={`relative text-white ${
+            addedToCart
+              ? "bg-green-200 hover:bg-green-300"
+              : "bg-blue-700 hover:bg-blue-800"
+          } focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 min-w-[120px] flex items-center justify-center`}
+        >
+          {showSpinner ? (
+            <ClipLoader color="#ffffff" size={24} />
+          ) : addedToCart ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m4.5 12.75 6 6 9-13.5"
+              />
+            </svg>
+          ) : (
+            "Add to Cart"
+          )}
+        </button>
       </div>
     </div>
   );

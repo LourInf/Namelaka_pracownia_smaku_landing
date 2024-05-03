@@ -2,19 +2,16 @@ import { useSession, signOut, signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useContext, useEffect } from "react";
-import { CartContext } from "@/components/CartContext";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
+import ProductCard from "@/components/ProductCard";
 
 export default function Account() {
   const { data: session } = useSession();
   const router = useRouter();
   // console.log(session);
 
-  const { wishlistProducts, addProductToWishlist, removeProductFromWishlist } =
-    useContext(CartContext);
-  const [wishlist, setWishlist] = useState([]);
   const [name, setName] = useState(session?.user?.name || "");
   const [surname, setSurname] = useState(session?.user?.surname || "");
   const [email, setEmail] = useState(session?.user?.email || "");
@@ -22,6 +19,7 @@ export default function Account() {
   const [visible, setVisible] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [wishlist, setWishlist] = useState([]);
 
   async function logout() {
     await signOut({ redirect: false }); // prevents next-auth from redirecting
@@ -50,15 +48,24 @@ export default function Account() {
 
   //fetches the current account info from db
   useEffect(() => {
+    if (!session) {
+      return;
+    }
     axios.get("/api/account").then((response) => {
       setName(response.data.name);
       setSurname(response.data.surname);
       setEmail(response.data.email);
       setPhone(response.data.phone);
     });
-  }, []);
+    axios
+      .get("/api/wishlist")
+      .then((response) => {
+        console.log("Wishlist Data:", response.data);
+        setWishlist(response.data);
+      })
+      .catch((error) => console.error("Error fetching wishlist:", error));
+  }, [session]);
 
-  //
   async function handleUpdateProfile(e) {
     e.preventDefault();
     setIsUpdating(true); // Show spinner
@@ -82,18 +89,12 @@ export default function Account() {
     }
   }
 
-  // Mock function to fetch wishlist details, replace with your API call or context method
-  // useEffect(() => {
-  //   if (wishlistProducts.length > 0) {
-  //     // Replace '/api/wishlist' with your endpoint
-  //     axios
-  //       .post("/api/wishlist", { ids: wishlistProducts })
-  //       .then((response) => setWishlist(response.data))
-  //       .catch((error) => console.error("Error fetching wishlist:", error));
-  //   } else {
-  //     setWishlist([]);
-  //   }
-  // }, [wishlistProducts]);
+  //this will make the liked product dissapear from wishlist if heart is clicked to unlike
+  function productRemovedFromWishlist(idToRemove) {
+    setWishlist((prev) => {
+      return [...prev.filter((p) => p._id.toString() !== idToRemove)];
+    });
+  }
 
   return (
     <>
@@ -106,27 +107,26 @@ export default function Account() {
             }`}
           >
             <h2 className="font-bold text-lg mb-4">Wishlist</h2>
-            <ul>
-              {wishlist.map((item) => (
-                <li key={item.id} className="mb-2 p-2 border-b">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        width={50}
-                        height={50}
-                      />
-                      <span>{item.title}</span>
-                    </div>
-                    <button onClick={() => removeProductFromWishlist(item.id)}>
-                      Remove
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            {wishlist.length === 0 && <p>Your wishlist is empty.</p>}
+            {wishlist.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {wishlist.map((item) => (
+                  <ProductCard
+                    key={item.id}
+                    product={item}
+                    wishedProducts={wishlist.map((product) =>
+                      product._id.toString()
+                    )}
+                    onRemoveFromWishlist={productRemovedFromWishlist}
+                  />
+                ))}
+              </div>
+            ) : session ? (
+              <p className="text-sm">Your wishlist is empty.</p>
+            ) : (
+              <p className="text-sm">
+                Log in to add products to your wishlist.
+              </p>
+            )}
           </div>
 
           {/* Account Info */}
@@ -135,88 +135,93 @@ export default function Account() {
               visible ? "fadeInUp visible" : "fadeInUp"
             }`}
           >
-            <h2 className="font-bold text-lg mb-4">Account Information</h2>
-            <form onSubmit={handleUpdateProfile}>
-              <div className="mb-4">
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="surname"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Surname
-                </label>
-                <input
-                  type="text"
-                  id="surname"
-                  value={surname}
-                  onChange={(e) => setSurname(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
+            <h2 className="font-bold text-lg mb-4">
+              {session ? "Account Information" : "Login"}
+            </h2>
+            {session && (
+              <form onSubmit={handleUpdateProfile}>
+                <div className="mb-4">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label
+                    htmlFor="surname"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Surname
+                  </label>
+                  <input
+                    type="text"
+                    id="surname"
+                    value={surname}
+                    onChange={(e) => setSurname(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
+                <div className="mb-4">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Phone number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    id="phone"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder=" "
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+                <button
+                  onClick={handleUpdateProfile}
+                  className={`w-full py-2 rounded-md text-white ${
+                    updateSuccess ? "bg-green-500" : "bg-black"
+                  }`}
+                  disabled={isUpdating || updateSuccess}
                 >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="phone"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Phone number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  id="phone"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder=" "
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
-              <button
-                onClick={handleUpdateProfile}
-                className={`w-full py-2 rounded-md text-white ${
-                  updateSuccess ? "bg-green-500" : "bg-black"
-                }`}
-                disabled={isUpdating || updateSuccess}
-              >
-                {isUpdating ? (
-                  <ClipLoader color="#ffffff" size={24} />
-                ) : updateSuccess ? (
-                  "Your profile was updated!"
-                ) : (
-                  "Update Profile"
-                )}
-              </button>
-            </form>
+                  {isUpdating ? (
+                    <ClipLoader color="#ffffff" size={24} />
+                  ) : updateSuccess ? (
+                    "Your profile was updated!"
+                  ) : (
+                    "Update Profile"
+                  )}
+                </button>
+              </form>
+            )}
+
             {session && (
               <button
                 onClick={logout}
@@ -228,9 +233,9 @@ export default function Account() {
             {!session && (
               <button
                 onClick={login}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-500 text-white rounded-md "
               >
-                Log in
+                Log in with Google
               </button>
             )}
           </div>

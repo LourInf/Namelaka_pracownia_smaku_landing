@@ -19,12 +19,12 @@ export default function Home({
   return (
     <div>
       <Header />
-      <Featured product={featuredProduct} />
+      <Featured product={featuredProduct} wishedProducts={wishedNewProducts} />
       <NewProducts
         newProducts={newProducts}
         wishedProducts={wishedNewProducts}
       />
-      <Products products={products} />
+      <Products products={products} wishedProducts={wishedNewProducts} />
     </div>
   );
 }
@@ -39,18 +39,16 @@ export async function getServerSideProps(context) {
   const products = await Product.find({});
 
   // retrieve session information
-  const { user } = await getServerSession(
-    context.req,
-    context.res,
-    authOptions
-  );
+  const session = await getServerSession(context.req, context.res, authOptions);
 
   // Initialize wishedProductIds as an empty array for non-loggedin users
   let wishedProductIds = [];
 
-  // If a user is logged in, fetch their wishlist
-  if (user) {
-    const wishlist = await Wishlist.findOne({ userEmail: user.email }).lean();
+  // If a user is logged in, fetch their wishlist (If no user, then we will get the empty array of wished products)
+  if (session?.user) {
+    const wishlist = await Wishlist.findOne({
+      userEmail: session.user.email,
+    }).lean();
     if (wishlist && wishlist.products) {
       wishedProductIds = wishlist.products.map((id) => id.toString());
     }

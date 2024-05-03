@@ -1,15 +1,19 @@
-import { Category } from "@/models/Category";
 import Products from "../products";
-import { Product } from "@/models/Product";
 import ProductCard from "@/components/ProductCard";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Spinner from "@/components/Spinner";
+import { Category } from "@/models/Category";
+import { Product } from "@/models/Product";
+import { Wishlist } from "@/models/Wishlist";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]";
 
 export default function CategoryPage({
   category,
   subCategories,
   products: originalProducts,
+  wishedProducts,
 }) {
   //the initial state should be an object where we have as key the property name and  as value "all"
   const [products, setProducts] = useState(originalProducts);
@@ -130,7 +134,13 @@ export default function CategoryPage({
             products.length > 0 &&
             products.map(
               (product) =>
-                product && <ProductCard key={product._id} product={product} />
+                product && (
+                  <ProductCard
+                    key={product._id}
+                    product={product}
+                    wishedProducts={wishedProducts}
+                  />
+                )
             )}
         </div>
       )}
@@ -148,11 +158,28 @@ export async function getServerSideProps(context) {
   const catIds = [category._id, ...subCategories.map((c) => c._id)];
   const products = await Product.find({ category: catIds });
   //   console.log("Products data:", products);
+
+  // retrieve session information
+  const { user } =
+    (await getServerSession(context.req, context.res, authOptions)) || {};
+
+  // Initialize wishedProductIds as an empty array for non-loggedin users
+  let wishedProductIds = [];
+
+  // If a user is logged in, fetch their wishlist
+  if (user) {
+    const wishlist = await Wishlist.findOne({ userEmail: user.email }).lean();
+    if (wishlist && wishlist.products) {
+      wishedProductIds = wishlist.products.map((id) => id.toString());
+    }
+  }
+
   return {
     props: {
       category: JSON.parse(JSON.stringify(category)),
       products: JSON.parse(JSON.stringify(products)),
       subCategories: JSON.parse(JSON.stringify(subCategories)),
+      wishedProducts: wishedProductIds,
     },
   };
 }

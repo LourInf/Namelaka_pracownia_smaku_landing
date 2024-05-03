@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Swal from "sweetalert2";
+import { useSession } from "next-auth/react";
 
 export default function Cart() {
   //'products' stores detailed info about the products (id, title, description, img...) that we can use as a state to display info to the user
@@ -16,6 +17,7 @@ export default function Cart() {
     removeProduct,
     clearCart,
   } = useContext(CartContext);
+  const { data: session } = useSession(); //to use session as a dependency on useEffect
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [email, setEmail] = useState("");
@@ -23,6 +25,7 @@ export default function Cart() {
   const [surname, setSurname] = useState("");
   const [phone, setPhone] = useState("");
   const [terms, setTerms] = useState(false);
+  const [total, setTotal] = useState(0);
 
   //When items are added to the cart, their IDs are stored in cartProducts. So whenever cartProducts>0 then I want to grab the info from our products (and i put that inside a state too)
   // This useEffect is triggered when cartProducts changes (eg. when items are added to or removed from the cart).
@@ -36,6 +39,7 @@ export default function Cart() {
         .then((response) => {
           // If successful, use setProducts to store all the product details in the state, so we can display in the cart section of my UI
           setProducts(response.data);
+          updateTotal(response.data); // Update total when products are fetched
         })
         .catch((error) => {
           // If there's an error, log it to the console
@@ -46,8 +50,18 @@ export default function Cart() {
         });
     } else {
       setProducts([]);
+      setTotal(0); // Reset total if no products are in the cart
     }
   }, [cartProducts]);
+
+  // Update the total whenever the products array changes
+  const updateTotal = (products) => {
+    const newTotal = products.reduce((acc, product) => {
+      const quantity = cartProducts.filter((id) => id === product._id).length;
+      return acc + product.price * quantity;
+    }, 0);
+    setTotal(newTotal);
+  };
 
   function increaseQtyOfProduct(id) {
     addProduct(id);
@@ -55,12 +69,6 @@ export default function Cart() {
 
   function decreaseQtyOfProduct(id) {
     decreaseProduct(id);
-  }
-
-  let total = 0;
-  for (const productId of cartProducts) {
-    const price = products.find((p) => p._id === productId)?.price || 0;
-    total += price;
   }
 
   async function goToPayment() {
@@ -94,13 +102,19 @@ export default function Cart() {
       });
       clearCart();
     }
+  }, []);
+
+  useEffect(() => {
+    if (!session) {
+      return;
+    }
     axios.get("/api/account").then((response) => {
       setName(response.data.name);
       setSurname(response.data.surname);
       setEmail(response.data.email);
       setPhone(response.data.phone);
     });
-  }, []);
+  }, [session]);
 
   return (
     <div className="pt-60 flex justify-center items-start px-4 sm:px-6 lg:px-8">

@@ -8,12 +8,13 @@ export default async function handler(req, res) {
   await mongooseConnect();
 
   // retrieves the user data (emal, name, etc) from the session.
-  const { user } = await getServerSession(req, res, authOptions);
+  const { user } = (await getServerSession(req, res, authOptions)) || {};
 
   if (!user) {
     return res.status(401).json({ error: "Not authenticated" });
   }
 
+  // POST request: Update the wishlist
   if (req.method === "POST") {
     const { product, liked } = req.body;
 
@@ -32,7 +33,25 @@ export default async function handler(req, res) {
       console.error("Wishlist modification error:", error);
       return res.status(500).json({ error: "Failed to modify wishlist" });
     }
-  } else {
+  }
+  // GET request: Fetch all wishlisted products
+  else if (req.method === "GET") {
+    try {
+      const wishlist = await Wishlist.findOne({
+        userEmail: user.email,
+      }).populate("products");
+      if (!wishlist) {
+        return res.status(404).json({ message: "Wishlist not found" });
+      }
+      return res.status(200).json(wishlist.products);
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+      return res.status(500).json({ error: "Failed to fetch wishlist" });
+    }
+  }
+
+  // Handle other HTTP methods not supported
+  else {
     return res.status(405).json({ error: "Method not allowed" });
   }
 }
