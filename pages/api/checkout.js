@@ -1,6 +1,8 @@
 import { mongooseConnect } from "@/lib/mongoose";
 import { Product } from "@/models/Product";
 import { Order } from "@/models/Order";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./auth/[...nextauth]";
 
 const stripe = require("stripe")(process.env.STRIPE_SK);
 
@@ -10,7 +12,7 @@ export default async function handler(req, res) {
   }
   const { email, name, surname, phone, terms, cartProducts } = req.body;
 
-  await mongooseConnect;
+  await mongooseConnect();
   const productsIds = cartProducts;
   const uniqueIds = [...new Set(productsIds)];
   const productsInfos = await Product.find({ _id: uniqueIds });
@@ -36,6 +38,8 @@ export default async function handler(req, res) {
   // Convert terms checkbox value to boolean
   const termsAccepted = terms === "on" ? true : false;
 
+  const session = await getServerSession(req, res, authOptions);
+
   // res.json({ line_items });
   const orderDoc = await Order.create({
     line_items,
@@ -45,9 +49,12 @@ export default async function handler(req, res) {
     surname,
     terms: termsAccepted,
     paid: false,
+    userEmail: session?.user?.email,
   });
 
-  const session = await stripe.checkout.sessions.create({
+  // console.log({ orderDoc, session });
+
+  const stripeSession = await stripe.checkout.sessions.create({
     line_items,
     mode: "payment",
     customer_email: email,
@@ -57,6 +64,6 @@ export default async function handler(req, res) {
   });
 
   res.json({
-    url: session.url,
+    url: stripeSession.url,
   });
 }

@@ -72,16 +72,35 @@ export default function Cart() {
   }
 
   async function goToPayment() {
-    const response = await axios.post("/api/checkout", {
-      name,
-      email,
-      phone,
-      surname,
-      terms,
-      cartProducts,
-    });
-    if (response.data.url) {
-      window.location = response.data.url;
+    if (products.length === 0 || cartProducts.length === 0) {
+      Swal.fire({
+        icon: "info",
+        title: "Oops...",
+        text: "There's nothing in your cart to pay for. Add some products before proceeding to checkout.",
+        confirmButtonText: "Got it!",
+      });
+      return;
+    }
+
+    try {
+      const response = await axios.post("/api/checkout", {
+        name,
+        email,
+        phone,
+        surname,
+        terms,
+        cartProducts,
+      });
+      if (response.data.url) {
+        window.location = response.data.url;
+      }
+    } catch (error) {
+      console.error("Checkout error:", error.response?.data || error);
+      Swal.fire({
+        icon: "error",
+        title: "Checkout Failed",
+        text: "Something went wrong during the checkout process.",
+      });
     }
   }
 

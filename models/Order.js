@@ -11,6 +11,7 @@ const OrderSchema = new Schema(
     phone: String,
     terms: Boolean,
     paid: Boolean,
+    userEmail: String, //needed to see the orders user places in his account
   },
   { timestamps: true }
 );
