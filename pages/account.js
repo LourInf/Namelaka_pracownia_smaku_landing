@@ -342,8 +342,15 @@ export default function Account() {
           )}
           {activeTab === "orders" && (
             <div className="px-10">
-              {orders.length > 0 &&
-                orders.map((o) => <OrderLine {...o} key={o.id} />)}
+              {orders.length > 0 ? (
+                orders.map((o) => <OrderLine {...o} key={o.id} />)
+              ) : (
+                <p className="text-sm">
+                  {session
+                    ? "You don't have any orders made yet."
+                    : "Log in to see your orders."}
+                </p>
+              )}
             </div>
           )}
         </div>
