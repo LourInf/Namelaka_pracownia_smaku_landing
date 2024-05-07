@@ -6,7 +6,7 @@ import { CartContext } from "./CartContext";
 export default function NavigationBar() {
   const { cartProducts } = useContext(CartContext);
   return (
-    <nav className="absolute top-0 left-0 w-full z-10 bg-gray-300 bg-opacity-40 backdrop-filter backdrop-blur-sm">
+    <nav className="bg-custom-pink">
       <div className="container flex flex-wrap justify-between items-center mx-auto">
         <div className="flex md:order-1">
           {/* Left side links */}

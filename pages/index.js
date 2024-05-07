@@ -7,22 +7,30 @@ import { Wishlist } from "@/models/Wishlist";
 import Products from "@/pages/products";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]";
+import { Setting } from "@/models/Setting";
 
 export default function Home({
   featuredProduct,
   newProducts,
   products,
   wishedNewProducts,
+  adText,
+  subAdText,
 }) {
   //console.log(featuredProduct); // if we have  product: JSON.stringify(product) we receive a string. To convert to object we need to parse it: JSON.parse(...)
   //console.log(newProducts)
   return (
-    <div>
+    <div className="px-40 py-1 bg-custom-pink">
       <Header />
-      <Featured product={featuredProduct} wishedProducts={wishedNewProducts} />
       <NewProducts
         newProducts={newProducts}
         wishedProducts={wishedNewProducts}
+      />
+      <Featured
+        product={featuredProduct}
+        adText={adText}
+        wishedProducts={wishedNewProducts}
+        subAdText={subAdText}
       />
       <Products products={products} wishedProducts={wishedNewProducts} />
     </div>
@@ -33,8 +41,19 @@ export default function Home({
 export async function getServerSideProps(context) {
   await mongooseConnect();
 
-  // Fetch products that all users should see regardless of authentication state
-  const featuredProduct = await Product.findById("660e928e219466e7c53f0731");
+  //fetch featured products
+  const featuredProductSetting = await Setting.findOne({
+    name: "featuredProductId",
+  });
+  let featuredProduct = null; //initialize them as null/empty
+  let adText = "";
+  let subAdText = "";
+  if (featuredProductSetting) {
+    featuredProduct = await Product.findById(featuredProductSetting.value);
+    adText = featuredProductSetting.adText || "";
+    subAdText = featuredProductSetting.subAdText || "";
+  }
+  // const featuredProduct = await Product.findById("660e928e219466e7c53f0731"); //hardcoded product
   const newProducts = await Product.find({}).sort({ _id: -1 }).limit(5);
   const products = await Product.find({});
 
@@ -61,6 +80,8 @@ export async function getServerSideProps(context) {
       newProducts: JSON.parse(JSON.stringify(newProducts)),
       products: JSON.parse(JSON.stringify(products)),
       wishedNewProducts: wishedProductIds,
+      adText: adText,
+      subAdText: subAdText,
     },
   };
 }

@@ -1,16 +1,23 @@
 import Carousel from "@/components/Carousel";
-import NavigationBar from "@/components/NavigationBar";
 
 export default function Header() {
   return (
-    <header className="">
-      <NavigationBar />
+    <header className="relative overflow-hidden" style={{ height: "100vh" }}>
       <Carousel />
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-        <h2 className="text-8xl font-bold text-white font-playfair-display">
-          Beauty in Every Bite
+      <div
+        className="absolute left-1/2 transform -translate-x-1/2 text-center"
+        style={{ bottom: "20%", width: "100%" }}
+      >
+        <h2
+          className="text-8xl font-bold text-gold font-playfair-display px-20"
+          style={{ position: "relative", bottom: "-50px" }}
+        >
+          Beauty in Every Bite Beauty in Every Bite
         </h2>
-        <p className="mt-4 text-xl text-white font-playfair-display">
+        <p
+          className="text-xl text-gold font-playfair-display"
+          style={{ position: "relative", bottom: "-70px" }}
+        >
           Taste the difference today.
         </p>
       </div>
