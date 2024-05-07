@@ -1,20 +1,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 
-export default function Carousel() {
+export default function Carousel({ images }) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const images = [
-    "/photo1.jpg",
-    "/photo2.jpg",
-    "/photo3.jpg",
-    "/photo1.jpg",
-    "/photo2.jpg",
-  ];
-
-  const goToSlide = (slideIndex) => {
-    setCurrentSlide(slideIndex);
-  };
 
   const goToPrevious = () => {
     setCurrentSlide((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -26,12 +14,12 @@ export default function Carousel() {
 
   return (
     <div className="relative w-full">
-      <div className="relative overflow-hidden rounded-s h-96 md:h-[700px]">
+      <div className="relative overflow-hidden rounded-sm h-96 md:h-[500px] lg:h-[600px] xl:h-[700px]">
         {images.map((src, index) => (
           <div
-            key={src}
-            className={`duration-700 ease-in-out ${
-              currentSlide === index ? "block" : "hidden"
+            key={src} // use the image URL as the key not index! when using index only 1 img was showing
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+              currentSlide === index ? "opacity-100" : "opacity-0"
             }`}
           >
             <Image
@@ -44,36 +32,50 @@ export default function Carousel() {
         ))}
       </div>
 
-      <div className="absolute z-30 flex space-x-3 -translate-x-1/2 bottom-5 left-1/2">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            type="button"
-            onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full ${
-              currentSlide === index ? "bg-white" : "bg-gray-500"
-            }`}
-            aria-label={`Slide ${index + 1}`}
-          ></button>
-        ))}
-      </div>
-
+      {/* Left arrow */}
       <button
         onClick={goToPrevious}
         type="button"
-        className="absolute top-0 left-0 z-30 p-4"
+        className="absolute left-0 top-1/2 z-30 p-4 -translate-y-1/2 text-gold"
+        aria-label="Previous"
       >
-        <span className="sr-only">Previous</span>
-        {/* Previous SVG icon */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-6 h-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="m18.75 4.5-7.5 7.5 7.5 7.5m-6-15L5.25 12l7.5 7.5"
+          />
+        </svg>
       </button>
 
+      {/* Right arrow */}
       <button
         onClick={goToNext}
         type="button"
-        className="absolute top-0 right-0 z-30 p-4"
+        className="absolute right-0 top-1/2 z-30 p-4 -translate-y-1/2 text-gold"
+        aria-label="Next"
       >
-        <span className="sr-only">Next</span>
-        {/* Next SVG icon */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-6 h-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"
+          />
+        </svg>
       </button>
     </div>
   );

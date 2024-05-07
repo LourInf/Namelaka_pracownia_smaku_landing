@@ -1,21 +1,21 @@
 import Carousel from "@/components/Carousel";
 
-export default function Header() {
+export default function Header({ carouselImages }) {
   return (
-    <header className="relative overflow-hidden" style={{ height: "100vh" }}>
-      <Carousel />
+    <header className="relative overflow-hidden h-screen header-text-div">
+      <Carousel images={carouselImages} />
       <div
-        className="absolute left-1/2 transform -translate-x-1/2 text-center"
-        style={{ bottom: "20%", width: "100%" }}
+        className="absolute text-center"
+        style={{ bottom: "15%", width: "100%" }}
       >
         <h2
-          className="text-8xl font-bold text-gold font-playfair-display px-20"
+          className="text-4xl md:text-6xl lg:text-8xl px-56 font-bold text-gold font-playfair-display header-text-h2"
           style={{ position: "relative", bottom: "-50px" }}
         >
-          Beauty in Every Bite Beauty in Every Bite
+          Beauty in Every Bite bla bla bla bla
         </h2>
         <p
-          className="text-xl text-gold font-playfair-display"
+          className="text-lg md:text-xl lg:text-2xl text-gold font-playfair-display header-text-p"
           style={{ position: "relative", bottom: "-70px" }}
         >
           Taste the difference today.

@@ -8,6 +8,7 @@ import Products from "@/pages/products";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { Setting } from "@/models/Setting";
+import { CarouselSetting } from "@/models/CarouselSetting";
 
 export default function Home({
   featuredProduct,
@@ -16,12 +17,13 @@ export default function Home({
   wishedNewProducts,
   adText,
   subAdText,
+  carouselImages,
 }) {
   //console.log(featuredProduct); // if we have  product: JSON.stringify(product) we receive a string. To convert to object we need to parse it: JSON.parse(...)
   //console.log(newProducts)
   return (
-    <div className="px-40 py-1 bg-custom-pink">
-      <Header />
+    <div className="px-4 sm:px-10 md:px-20 lg:px-28 xl:px-40 py-1 bg-custom-pink">
+      <Header carouselImages={carouselImages} />
       <NewProducts
         newProducts={newProducts}
         wishedProducts={wishedNewProducts}
@@ -56,6 +58,10 @@ export async function getServerSideProps(context) {
   // const featuredProduct = await Product.findById("660e928e219466e7c53f0731"); //hardcoded product
   const newProducts = await Product.find({}).sort({ _id: -1 }).limit(5);
   const products = await Product.find({});
+  const carouselSettings = await CarouselSetting.findOne({
+    name: "carouselImages",
+  });
+  const carouselImages = carouselSettings ? carouselSettings.images : [];
 
   // retrieve session information
   const session = await getServerSession(context.req, context.res, authOptions);
@@ -82,6 +88,7 @@ export async function getServerSideProps(context) {
       wishedNewProducts: wishedProductIds,
       adText: adText,
       subAdText: subAdText,
+      carouselImages,
     },
   };
 }
