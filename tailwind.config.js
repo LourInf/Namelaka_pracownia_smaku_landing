@@ -8,6 +8,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        "menu-bg": "url('/bg_menu.jpg')",
+      },
       colors: {
         // "creamy-beige": "#F5F0E6",
         // "light-grey": "#E8E8E8",

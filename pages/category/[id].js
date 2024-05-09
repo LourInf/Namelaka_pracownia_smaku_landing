@@ -8,12 +8,14 @@ import { Product } from "@/models/Product";
 import { Wishlist } from "@/models/Wishlist";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]";
+import Layout from "@/components/Layout";
 
 export default function CategoryPage({
   category,
   subCategories,
   products: originalProducts,
   wishedProducts,
+  mainCategories,
 }) {
   //the initial state should be an object where we have as key the property name and  as value "all"
   const [products, setProducts] = useState(originalProducts);
@@ -37,6 +39,15 @@ export default function CategoryPage({
       return newValue;
     });
   }
+
+  useEffect(() => {
+    setFiltersValues(
+      category.properties.map((p) => ({
+        name: p.name,
+        value: "all",
+      }))
+    );
+  }, [category]);
 
   useEffect(() => {
     setLoading(true);
@@ -71,83 +82,92 @@ export default function CategoryPage({
   }
 
   return (
-    <>
-      <h1 className="text-2xl text-center mt-60 mb-4">{category?.name}</h1>
-      <div className="flex flex-row gap-6 justify-center mb-4">
-        {category && category.properties && category.properties.length > 0 ? (
-          category.properties.map((prop) => (
-            <div key={prop.name} className="bg-slate-300 rounded-md pl-2">
-              <label htmlFor={prop.name}>{prop.name}:</label>
-              <select
-                id={prop.name}
-                value={filtersValues.find((f) => f.name === prop.name).value}
-                onChange={(e) => handleFilterChange(prop.name, e.target.value)}
-                className="bg-transparent rounded-md border-none"
-              >
-                <option value="all" className="bg-slate-200">
-                  Show all
-                </option>
-                {prop.values.map((val) => (
-                  <option key={val} value={val} className="bg-slate-200">
-                    {val}
+    <Layout categories={mainCategories}>
+      <div className="bg-custom-pink px-40">
+        <h1 className="text-2xl text-center mt-20 mb-4">{category?.name}</h1>
+        <div className="flex flex-row gap-6 justify-center mb-4">
+          {category && category.properties && category.properties.length > 0 ? (
+            category.properties.map((prop) => (
+              <div key={prop.name} className="bg-slate-300 rounded-md pl-2">
+                <label htmlFor={prop.name}>{prop.name}:</label>
+                <select
+                  id={prop.name}
+                  value={
+                    filtersValues.find((f) => f.name === prop.name)?.value ||
+                    "all"
+                  }
+                  onChange={(e) =>
+                    handleFilterChange(prop.name, e.target.value)
+                  }
+                  className="bg-transparent rounded-md border-none"
+                >
+                  <option value="all" className="bg-slate-200">
+                    Show all
                   </option>
-                ))}
-              </select>
-            </div>
-          ))
-        ) : (
-          <p>No filters available.</p>
-        )}
+                  {prop.values.map((val) => (
+                    <option key={val} value={val} className="bg-slate-200">
+                      {val}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))
+          ) : (
+            <p>No filters available.</p>
+          )}
 
-        <div className="bg-slate-300 rounded-md pl-2">
-          Sort by:
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="bg-transparent rounded-md border-none bg-slate-300"
+          <div className="bg-slate-300 rounded-md pl-2">
+            Sort by:
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="bg-transparent rounded-md border-none bg-slate-300"
+            >
+              <option value="price_asc" className="bg-slate-200">
+                Price, lowest first
+              </option>
+              <option value="price_desc" className="bg-slate-200">
+                Price, highest first
+              </option>
+              <option value="_id-desc">newest first</option>
+              <option value="_id-asc">oldest first</option>
+            </select>
+          </div>
+          <button
+            onClick={resetFiltersAndSort}
+            className="text-gold border border-gold hover:bg-gold hover:text-white py-2 px-4 rounded transition-colors"
           >
-            <option value="price_asc" className="bg-slate-200">
-              Price, lowest first
-            </option>
-            <option value="price_desc" className="bg-slate-200">
-              Price, highest first
-            </option>
-            <option value="_id-desc">newest first</option>
-            <option value="_id-asc">oldest first</option>
-          </select>
+            Reset Filters
+          </button>
         </div>
-        <button
-          onClick={resetFiltersAndSort}
-          className="text-gold border border-gold hover:bg-gold hover:text-white py-2 px-4 rounded transition-colors"
-        >
-          Reset Filters
-        </button>
+        {loading && (
+          <div className="flex justify-center items-start pt-32 h-screen">
+            <Spinner />
+          </div>
+        )}
+        {!loading && (
+          <div className="grid grid-cols-5 gap-4">
+            {products &&
+              products.length > 0 &&
+              products.map(
+                (product) =>
+                  product && (
+                    <ProductCard
+                      key={product._id}
+                      product={product}
+                      wishedProducts={wishedProducts}
+                    />
+                  )
+              )}
+          </div>
+        )}
+        <div>
+          {products.length === 0 && (
+            <div className="pl-5">No Products found</div>
+          )}
+        </div>
       </div>
-      {loading && (
-        <div className="flex justify-center items-start pt-32 h-screen">
-          <Spinner />
-        </div>
-      )}
-      {!loading && (
-        <div className="grid grid-cols-5 gap-4">
-          {products &&
-            products.length > 0 &&
-            products.map(
-              (product) =>
-                product && (
-                  <ProductCard
-                    key={product._id}
-                    product={product}
-                    wishedProducts={wishedProducts}
-                  />
-                )
-            )}
-        </div>
-      )}
-      <div>
-        {products.length === 0 && <div className="pl-5">No Products found</div>}
-      </div>
-    </>
+    </Layout>
   );
 }
 
@@ -157,6 +177,7 @@ export async function getServerSideProps(context) {
   const subCategories = await Category.find({ parent: category._id });
   const catIds = [category._id, ...subCategories.map((c) => c._id)];
   const products = await Product.find({ category: catIds });
+  const categories = await Category.find({ parent: null });
   //   console.log("Products data:", products);
 
   // retrieve session information
@@ -180,6 +201,7 @@ export async function getServerSideProps(context) {
       products: JSON.parse(JSON.stringify(products)),
       subCategories: JSON.parse(JSON.stringify(subCategories)),
       wishedProducts: wishedProductIds,
+      mainCategories: JSON.parse(JSON.stringify(categories)),
     },
   };
 }

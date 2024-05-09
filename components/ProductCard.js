@@ -78,7 +78,7 @@ export default function ProductCard({
   }
 
   return (
-    <div className="w-full max-w-60 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+    <div className="w-full max-w-60 bg-custom-pink ">
       <Link href={`/product/${product._id}`}>
         <Image
           className="p-8 rounded-t-lg"
@@ -91,12 +91,12 @@ export default function ProductCard({
       </Link>
       <div className="px-5 pb-5">
         <Link href={`/product/${product._id}`}>
-          <h5 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
+          <h5 className="text-xl font-semibold tracking-tight text-gray-900">
             {product.title}
           </h5>
         </Link>
         <div className="flex items-center justify-between mb-5">
-          <span className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+          <span className="text-2xl font-bold text-gray-900 mt-1">
             {product.price} zł
           </span>
           <button onClick={addToWishlist} className="mt-1">
@@ -109,7 +109,7 @@ export default function ProductCard({
             addedToCart
               ? "bg-green-200 hover:bg-green-300"
               : "bg-blue-700 hover:bg-blue-800"
-          } focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 min-w-[120px] flex items-center justify-center`}
+          } focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center min-w-[120px] flex items-center justify-center`}
         >
           {showSpinner ? (
             <ClipLoader color="#ffffff" size={24} />

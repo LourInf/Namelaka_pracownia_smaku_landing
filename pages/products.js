@@ -6,24 +6,24 @@ import ProductCard from "@/components/ProductCard";
 import { Wishlist } from "@/models/Wishlist";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]";
+import Layout from "@/components/Layout";
+import { Category } from "@/models/Category";
 
-export default function Products({ products, wishedProducts }) {
+export default function Products({ products, wishedProducts, mainCategories }) {
   return (
-    <>
-      <header>
-        <h1 className="text-2xl text-center mt-60">All Products</h1>
-        <div className="flex flex-wrap justify-center gap-4">
-          {products?.length > 0 &&
-            products?.map((product) => (
-              <ProductCard
-                key={product._id}
-                product={product}
-                wishedProducts={wishedProducts}
-              />
-            ))}
-        </div>
-      </header>
-    </>
+    <Layout categories={mainCategories}>
+      <h1 className="text-2xl text-center mt-20">All Products</h1>
+      <div className="flex flex-wrap justify-center gap-4 px-40 bg-custom-pink">
+        {products?.length > 0 &&
+          products?.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              wishedProducts={wishedProducts}
+            />
+          ))}
+      </div>
+    </Layout>
   );
 }
 
@@ -33,6 +33,7 @@ export async function getServerSideProps(context) {
   await mongooseConnect();
   // Find all products in the database and sort them by the newest first based on their _id value
   const products = await Product.find({}, null, { sort: { _id: -1 } });
+  const categories = await Category.find({ parent: null });
   // Return the list of products as a prop to the React component to render
 
   // retrieve session information
@@ -58,6 +59,7 @@ export async function getServerSideProps(context) {
       // compatibility with Next.js data requirements (MongoDB ObjectId is not serializable)
       products: JSON.parse(JSON.stringify(products)),
       wishedProducts: wishedProductIds,
+      mainCategories: JSON.parse(JSON.stringify(categories)),
     },
   };
 }
