@@ -4,11 +4,12 @@ import NewProducts from "@/components/NewProducts";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Product } from "@/models/Product";
 import { Wishlist } from "@/models/Wishlist";
-import Products from "@/pages/products";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { Setting } from "@/models/Setting";
 import { CarouselSetting } from "@/models/CarouselSetting";
+import { Category } from "@/models/Category";
+import Categories from "./categories";
 
 export default function Home({
   featuredProduct,
@@ -18,11 +19,12 @@ export default function Home({
   adText,
   subAdText,
   carouselImages,
+  mainCategories,
 }) {
   //console.log(featuredProduct); // if we have  product: JSON.stringify(product) we receive a string. To convert to object we need to parse it: JSON.parse(...)
   //console.log(newProducts)
   return (
-    <div className="px-4 sm:px-10 md:px-20 lg:px-28 xl:px-40 py-1 bg-custom-pink">
+    <div className="px-4 sm:px-10 md:px-20 lg:px-28 xl:px-72 py-1 bg-custom-pink">
       <Header carouselImages={carouselImages} />
       <NewProducts
         newProducts={newProducts}
@@ -34,7 +36,7 @@ export default function Home({
         wishedProducts={wishedNewProducts}
         subAdText={subAdText}
       />
-      <Products products={products} wishedProducts={wishedNewProducts} />
+      <Categories mainCategories={mainCategories} />
     </div>
   );
 }
@@ -56,12 +58,16 @@ export async function getServerSideProps(context) {
     subAdText = featuredProductSetting.subAdText || "";
   }
   // const featuredProduct = await Product.findById("660e928e219466e7c53f0731"); //hardcoded product
-  const newProducts = await Product.find({}).sort({ _id: -1 }).limit(5);
+  const newProducts = await Product.find({}).sort({ _id: -1 }).limit(4);
   const products = await Product.find({});
   const carouselSettings = await CarouselSetting.findOne({
     name: "carouselImages",
   });
   const carouselImages = carouselSettings ? carouselSettings.images : [];
+
+  // Fetch main categories
+  const categories = await Category.find();
+  const mainCategories = categories.filter((c) => !c.parent);
 
   // retrieve session information
   const session = await getServerSession(context.req, context.res, authOptions);
@@ -89,6 +95,7 @@ export async function getServerSideProps(context) {
       adText: adText,
       subAdText: subAdText,
       carouselImages,
+      mainCategories: JSON.parse(JSON.stringify(mainCategories)),
     },
   };
 }

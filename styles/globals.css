@@ -4,6 +4,22 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
 
+.btn-primary {
+  @apply bg-custom-magenta text-white px-4 py-2 rounded-xl;
+}
+
+.btn-primary:hover {
+  @apply bg-custom-dark-magenta font-semibold transition;
+}
+
+.btn-cart {
+  @apply bg-custom-magenta text-white px-2 py-2 rounded-full;
+}
+
+.btn-cart:hover {
+  @apply bg-custom-dark-magenta font-semibold transition;
+}
+
 .fadeInUp {
   opacity: 0;
   transform: translateY(20px);
@@ -22,47 +38,10 @@
   }
 }
 
-/* Medium screens (tablets) */
-@media (max-width: 1024px) {
-  .header-text-h2 {
-    font-size: 6xl; /* Smaller font size for h2 */
-    padding-left: 20px; /* Reduced padding */
-    padding-right: 20px;
-  }
-  .header-text-p {
-    font-size: xl; /* Smaller font size for p */
-  }
-  .header-text-div {
-    bottom: 12%; /* Slightly higher to adjust for smaller screen */
-  }
-}
-
-/* Small screens (mobile devices) */
 @media (max-width: 768px) {
-  .header-text-h2 {
-    font-size: 4xl; /* Even smaller font size for h2 */
-    padding-left: 10px; /* Minimal padding */
-    padding-right: 10px;
-  }
-  .header-text-p {
-    font-size: lg; /* Smaller font size for p */
-  }
-  .header-text-div {
-    bottom: 10%; /* Higher still to accommodate mobile screens */
-  }
-}
-
-/* Very small screens */
-@media (max-width: 480px) {
-  .header-text-h2 {
-    font-size: xl; /* Smallest font size for h2 */
-    padding-left: 5px; /* Tight padding */
-    padding-right: 5px;
-  }
-  .header-text-p {
-    font-size: base; /* Base font size for p */
-  }
-  .header-text-div {
-    bottom: 8%; /* Adjust to ensure text does not overlap with carousel controls, etc. */
+  .header-text-div .header-text-h2 {
+    padding-left: 50px;
+    padding-right: 50px;
+    margin-top: 60px;
   }
 }

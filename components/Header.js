@@ -10,13 +10,13 @@ export default function Header({ carouselImages }) {
       >
         <h2
           className="text-4xl md:text-6xl lg:text-8xl px-56 font-bold text-gold font-playfair-display header-text-h2"
-          style={{ position: "relative", bottom: "-50px" }}
+          style={{ position: "relative", bottom: "50px" }}
         >
           Beauty in Every Bite bla bla bla bla
         </h2>
         <p
           className="text-lg md:text-xl lg:text-2xl text-gold font-playfair-display header-text-p"
-          style={{ position: "relative", bottom: "-70px" }}
+          style={{ position: "relative", bottom: "50px" }}
         >
           Taste the difference today.
         </p>

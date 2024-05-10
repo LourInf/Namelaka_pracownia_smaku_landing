@@ -7,9 +7,14 @@ export default function NavigationBar() {
   const { cartProducts } = useContext(CartContext);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Function to close the menu on small screens
+  const closeMenu = () => {
+    setIsOpen(false);
+  };
+
   return (
     <nav className="bg-custom-pink relative font-lato">
-      <div className="container flex flex-wrap justify-between items-center mx-auto p-4">
+      <div className="container flex flex-wrap justify-between items-center px-24 mx-auto p-2">
         <button
           className="text-gray-900 md:hidden"
           aria-label="Toggle Menu"
@@ -54,8 +59,8 @@ export default function NavigationBar() {
             <Image
               src="/logo_namelaka_nobg.png"
               alt="Namelaka Logo"
-              width={150}
-              height={150}
+              width={145}
+              height={145}
               className="shrink-0"
             />
           </Link>
@@ -139,46 +144,69 @@ export default function NavigationBar() {
           className={`${
             isOpen ? "fixed inset-0 bg-black bg-opacity-75 z-40" : "hidden"
           } md:hidden`}
-          onClick={() => setIsOpen(false)}
+          onClick={closeMenu}
         >
           <div
             className="flex flex-col items-center justify-center min-h-screen text-center space-y-4"
             onClick={(e) => e.stopPropagation()} // Prevents click inside the menu from closing it
           >
-            <Link href="/" className="rounded-lg text-sm p-2 text-white">
+            <Link
+              href="/"
+              className="rounded-lg text-sm p-2 text-white hover:bg-green-200 hover:text-gray-800 transition duration-300 ease-in-out"
+              onClick={closeMenu}
+            >
               Home
             </Link>
             <Link
               href="/categories"
-              className="rounded-lg text-sm p-2 text-white"
+              className="rounded-lg text-sm p-2 text-white hover:bg-green-200 hover:text-gray-800 transition duration-300 ease-in-out"
+              onClick={closeMenu}
             >
               Categories
             </Link>
             <Link
               href="/products"
-              className="rounded-lg text-sm p-2 text-white"
+              className="rounded-lg text-sm p-2 text-white hover:bg-green-200 hover:text-gray-800 transition duration-300 ease-in-out"
+              onClick={closeMenu}
             >
               All products
             </Link>
-            <Link href="/about" className="rounded-lg text-sm p-2 text-white">
+            <Link
+              href="/about"
+              className="rounded-lg text-sm p-2 text-white hover:bg-green-200 hover:text-gray-800 transition duration-300 ease-in-out"
+              onClick={closeMenu}
+            >
               About us
             </Link>
-            <Link href="/contact" className="rounded-lg text-sm p-2 text-white">
+            <Link
+              href="/contact"
+              className="rounded-lg text-sm p-2 text-white hover:bg-green-200 hover:text-gray-800 transition duration-300 ease-in-out"
+              onClick={closeMenu}
+            >
               Contact
             </Link>
-            <Link href="/cart" className="rounded-lg text-sm p-2 text-white">
+            <Link
+              href="/cart"
+              className="rounded-lg text-sm p-2 text-white hover:bg-green-200 hover:text-gray-800 transition duration-300 ease-in-out"
+              onClick={closeMenu}
+            >
               Cart({cartProducts.length})
             </Link>
-            <Link href="/account" className="rounded-lg text-sm p-2 text-white">
+            <Link
+              href="/account"
+              className="rounded-lg text-sm p-2 text-white hover:bg-green-200 hover:text-gray-800 transition duration-300 ease-in-out"
+              onClick={closeMenu}
+            >
               Account
             </Link>
-            <Link href="/search" className="rounded-lg text-sm p-2 text-white">
+            <Link
+              href="/search"
+              className="rounded-lg text-sm p-2 text-white hover:bg-green-200 hover:text-gray-800 transition duration-300 ease-in-out"
+              onClick={closeMenu}
+            >
               Search
             </Link>
-            <button
-              className="mt-10 p-2 rounded bg-red-600 text-white"
-              onClick={() => setIsOpen(false)}
-            >
+            <button className="mt-10 p-2 btn-primary" onClick={closeMenu}>
               Close Menu
             </button>
           </div>

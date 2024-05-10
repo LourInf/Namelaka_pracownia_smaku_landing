@@ -58,6 +58,40 @@ export default function ProductCard({
     </svg>
   );
 
+  const ShoppingBagIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="w-6 h-6"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m4.5 12.75 6 6 9-13.5"
+      />
+    </svg>
+  );
+
+  const CheckIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1}
+      stroke="currentColor"
+      className="w-6 h-6"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+      />
+    </svg>
+  );
+
   function addToWishlist() {
     const nextValue = !isLiked; // Determine the new liked state by negating the current state
     setIsLiked(nextValue); // update the UI to reflect the new liked state
@@ -78,60 +112,50 @@ export default function ProductCard({
   }
 
   return (
-    <div className="w-full max-w-60 bg-custom-pink ">
+    <div className="w-full max-w-60 bg-custom-pink mx-8">
       <Link href={`/product/${product._id}`}>
-        <Image
-          className="p-8 rounded-t-lg"
+        <img
+          className="w-56 h-56 rounded-full border border-gold mx-auto"
           src={product.images[0]}
           alt={`Image of ${product.title}`}
-          width={500}
-          height={300}
-          layout="responsive"
         />
       </Link>
-      <div className="px-5 pb-5">
+      <div className="px-5 pb-32">
         <Link href={`/product/${product._id}`}>
-          <h5 className="text-xl font-semibold tracking-tight text-gray-900">
-            {product.title}
-          </h5>
+          <div className="flex items-center justify-center min-h-24">
+            <h5 className="text-xl font-semibold font-lato text-center text-gray-900">
+              {product.title}
+            </h5>
+          </div>
         </Link>
-        <div className="flex items-center justify-between mb-5">
-          <span className="text-2xl font-bold text-gray-900 mt-1">
-            {product.price} zł
-          </span>
-          <button onClick={addToWishlist} className="mt-1">
+
+        <p className="text-2xl font-bold text-gold font-playfair-display mb-7 text-center">
+          {product.price} zł
+        </p>
+        <div className="flex items-center justify-between px-14">
+          <button
+            onClick={() => handleAddToCart(product._id)}
+            className={`relative text-white ${
+              addedToCart
+                ? "bg-green-200 px-2 py-2 rounded-full hover:bg-green-300"
+                : "btn-cart"
+            } focus:ring-1 focus:outline-none focus:ring-blue-300 text-center min-w-[40px] flex items-center justify-center`}
+          >
+            {showSpinner ? (
+              <ClipLoader color="#ffffff" size={24} />
+            ) : addedToCart ? (
+              <ShoppingBagIcon />
+            ) : (
+              <CheckIcon />
+            )}
+          </button>
+          <button
+            onClick={addToWishlist}
+            className="mt-1 text-custom-dark-green"
+          >
             {isLiked ? <HeartSolidIcon /> : <HeartOutlineIcon />}
           </button>
         </div>
-        <button
-          onClick={() => handleAddToCart(product._id)}
-          className={`relative text-white ${
-            addedToCart
-              ? "bg-green-200 hover:bg-green-300"
-              : "bg-blue-700 hover:bg-blue-800"
-          } focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center min-w-[120px] flex items-center justify-center`}
-        >
-          {showSpinner ? (
-            <ClipLoader color="#ffffff" size={24} />
-          ) : addedToCart ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m4.5 12.75 6 6 9-13.5"
-              />
-            </svg>
-          ) : (
-            "Add to Cart"
-          )}
-        </button>
       </div>
     </div>
   );

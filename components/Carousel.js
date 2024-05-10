@@ -14,7 +14,7 @@ export default function Carousel({ images }) {
 
   return (
     <div className="relative w-full">
-      <div className="relative overflow-hidden rounded-sm h-96 md:h-[500px] lg:h-[600px] xl:h-[700px]">
+      <div className="relative overflow-hidden rounded-sm h-80 md:h-[400px] lg:h-[500px] xl:h-[600px]">
         {images.map((src, index) => (
           <div
             key={src} // use the image URL as the key not index! when using index only 1 img was showing
